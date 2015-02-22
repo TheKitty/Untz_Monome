@@ -1,6 +1,6 @@
 The MIT License (MIT)
 
-Copyright (c) 2015 Mike Barela
+Copyright (c) 2015 Mike Barela for Adafruit Industries http://learn.adafruit.com/
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,3 +20,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+Acknowledgement is given for documentation / code review of the following resources:
+- http://monome.org/docs/tech:serial
+
+- https://github.com/monome/libmonome/blob/master/src/proto/mext.h 
+- Copyright (c) 2010 William Light <wrl@illest.net> with in-file free use statement
