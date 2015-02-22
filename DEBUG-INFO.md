@@ -23,15 +23,9 @@ The documentation is not complete so some assumptions have been made.  If assump
 2) Grid orientation - assumed to be as bepow, this is a 50-50 shot but it seemed right
 					USB
 					PORT
-y  x ->	0	1	2	3	4	5	6	7	(8... )
-0
-1
-2
-3
-4
-5
-6
-7
+x left to right	0	1	2	3	4	5	6	7	(8... 
+
+y top to bottom 0	1	2	3	4	5	6	7 
 
 If the orientatiuon has y going left to right and x going top to bottom then the code will need to be changed accordingly or a rotate command of 90 degrees issued at the serialosc level by the control PC software.
 
