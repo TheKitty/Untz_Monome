@@ -13,3 +13,5 @@ software but the serial protocol may easily be handled by your choice of program
 Processing, Python, C, Ruby, or others.
 
 This work is open source per the LICENSE file.  
+
+This is currently in development, if you try it and find issues, please place them in the Issues area for resolution.  Thank you.
