@@ -11,3 +11,5 @@ mext is used by the monome serialosc software which provides a host computer int
 many types of creative software packages such as Max MSP that interface well with monome compatible
 software but the serial protocol may easily be handled by your choice of programming languages including
 Processing, Python, C, Ruby, or others.
+
+This work is open source per the LICENSE file.  
