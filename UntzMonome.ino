@@ -14,7 +14,7 @@
   Monome emulation written by Mike Barela for Adafruit Industries
   MIT license, all text above must be included in any redistribution
   
-  Version 1.0  2015-02-22  First Version
+  Version 1.0  2015-02-28  First Version
  ***********************************************************/
 #include <Wire.h>                  // Uses I2C communication Leonardo to Trellis
 #include "Adafruit_Trellis.h"      // Trellis driver library
@@ -23,7 +23,7 @@
 // If you have the next line active, it allows you to enter values into the serial terminal in ASCII
 //   rather than communicate via binary mext commands.  Debug does not output binary return values
 // Comment out next line to interface with monome software
-#define DEBUG 1
+//#define DEBUG 1
 
 // **** SET # OF TRELLISES HERE:  4 = UNTZ, 8 = HellaUNTZ, don't use other values
 #define NUMTRELLIS 4              
@@ -53,13 +53,14 @@ const uint8_t numGrids = (NUMTRELLIS / 4); //
 uint8_t       offsetX  = 0;                // offset for HellaUNTZ only (8x8 UNTZ can't offset)
 unsigned long prevReadTime = 0L;           // Keypad polling timer
 
-char deviceID[33] = "Adafruit UNTZtrument           \0";
+String deviceID  = "monome                          ";  // 32
+String serialNum = "m0000009"; // 8
 struct coord { 
    uint8_t x; 
    uint8_t y; } coord;      // x/y coordinates for a single point
 
 void setup() {
-  Serial.begin(9600);       // check baud rate for mext, is this standard?
+  Serial.begin(115200);     // check baud rate for mext
   
   trellis.begin(            // Initialize trellises in UNTZ
     0x70, 0x71, 0x72, 0x73
@@ -67,6 +68,18 @@ void setup() {
    ,0x74, 0x75, 0x76, 0x77
 #endif
    );
+   
+   trellis.clear();              // signal the program is running
+   trellis.writeDisplay();
+   for(uint8_t i=0; i<3; i++) {
+     trellis.setLED(0);
+     trellis.setLED(63);
+     trellis.writeDisplay();
+     delay(250);
+     trellis.clrLED(0);
+     trellis.clrLED(63);
+     trellis.writeDisplay();
+   }
 }
 
 void loop() {
@@ -77,7 +90,7 @@ void loop() {
   // poll keyboard state and report if something change.  This will be key pressed or key released
   if((t - prevReadTime) >= 20L) {         // 20ms = min Trellis poll time
     if (trellis.readSwitches() > 0) {
-      TrellisKeys();
+      trellisKeys();
     }
   }
   prevReadTime = t;
@@ -120,9 +133,9 @@ void processSerial() {
 //               Serial.write((uint8_t)0x01);  
                break;
     case 0x01: writeInt((uint8_t)0x01);      // system / query ID /sys/id (debug "b")
-               for(i=0; i<32; i++) {
-                 Serial.write(deviceID[i]);  // write out device ID (32 characters)
-               }
+//               for(i=0; i<wcslen(deviceID); i++) {
+                 Serial.print(deviceID);  // write out device ID (32 characters)
+//               }
                break;
     case 0x02: for(i=0; i<32; i++) {          // system / write ID  (debug "c")
                  deviceID[i] = Serial.read(); // Get ID into grid program
@@ -148,8 +161,8 @@ void processSerial() {
     case 0x08: deviceAddress = readInt(); // system / set ADDR (scan) (debug "i")
                dummy = readInt();         // address value
                break;
-    case 0x0F: writeInt((uint8_t)0x0F);       // Send Serial Number (debug "p")
-               Serial.write("a0000001",8);    // monome SN are m#######
+    case 0x0F: writeInt((uint8_t)0x0F);   // Send Serial Number (debug "p")
+               Serial.print(serialNum);   // monome SN m####### or m64-#### m128-### m256-####
                break;
     //
     // 0x10-0x1F are for an LED Grid Control.  All bytes incoming, no responses back
@@ -317,7 +330,7 @@ int8_t readInt() {                // Read an 8 bit value from serial port (0x00 
   
 // Function TrellisKeys checks the switch matrix to see if any key has been pressed and/or released 
 //   and returns that status to the mext interface via serial
-void TrellisKeys() {
+void trellisKeys() {
      // go through every button
      for (uint8_t i=0; i<numKeys; i++) {
         // if it was pressed, tell controller
