@@ -75,11 +75,11 @@ void setup() {
    trellis.writeDisplay();
    for(uint8_t i=0; i<3; i++) {
      trellis.setLED(0);
-     trellis.setLED(127);
+     trellis.setLED(numKeys-1);
      trellis.writeDisplay();
      delay(250);
      trellis.clrLED(0);
-     trellis.clrLED(127);
+     trellis.clrLED(numKeys-1);
      trellis.writeDisplay();
    }
 }
