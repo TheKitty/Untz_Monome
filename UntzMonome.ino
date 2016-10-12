@@ -23,10 +23,12 @@
 // If you have the next line active, it allows you to enter values into the serial terminal in ASCII
 //   rather than communicate via binary mext commands.  Debug does not output binary return values
 // Comment out next line to interface with monome software
-//#define DEBUG 1
+// #define DEBUG 1
 
 // **** SET # OF TRELLISES HERE:  4 = UNTZ, 8 = HellaUNTZ, don't use other values
-#define NUMTRELLIS 4              
+#define NUMTRELLIS 8              
+
+#define INTERVAL 12L // interval between scans
 
 Adafruit_Trellis matrix[NUMTRELLIS] = {    // Instance matrix using number of Trellises set above
   Adafruit_Trellis(), Adafruit_Trellis(),
@@ -54,7 +56,7 @@ uint8_t       offsetX  = 0;                // offset for HellaUNTZ only (8x8 UNT
 unsigned long prevReadTime = 0L;           // Keypad polling timer
 
 String deviceID  = "monome                          ";  // 32
-String serialNum = "m0000009"; // 8
+String serialNum = "m1000009"; // 8
 struct coord { 
    uint8_t x; 
    uint8_t y; } coord;      // x/y coordinates for a single point
@@ -73,28 +75,30 @@ void setup() {
    trellis.writeDisplay();
    for(uint8_t i=0; i<3; i++) {
      trellis.setLED(0);
-     trellis.setLED(63);
+     trellis.setLED(numKeys-1);
      trellis.writeDisplay();
      delay(250);
      trellis.clrLED(0);
-     trellis.clrLED(63);
+     trellis.clrLED(numKeys-1);
      trellis.writeDisplay();
    }
 }
 
 void loop() {
   unsigned long t = millis();
-  if(Serial.available() > 0) {            // there is a remote command waiting
-     processSerial();
+  if (Serial.available() > 0) {            // there is a remote command waiting
+      do {
+         processSerial();
+      } while(Serial.available() > 16);
   }
   // poll keyboard state and report if something change.  This will be key pressed or key released
-  if((t - prevReadTime) >= 20L) {         // 20ms = min Trellis poll time
+  if( (unsigned long)(t - prevReadTime) >= INTERVAL) {         // 20ms = min Trellis poll time
     if (trellis.readSwitches() > 0) {
       trellisKeys();
     }
   }
   prevReadTime = t;
-  delay(20);             // shouldn't be needed but it is required to have it work...for now
+  delay(11);             // shouldn't be needed but it is required to have it work...for now
 }
 
 void processSerial() {
@@ -182,7 +186,8 @@ void processSerial() {
                break;
     case 0x14: readX = readInt();                    // set grid (debug "u")
                readY = readInt();  
-               if(readX != 0 && readX != 8) break;   // only values are at 0,0 and 8,0
+               readX >> 3; readX << 3; // floor to multiple of 8
+               readY >> 3; readY << 3;
                if(readX == 8 && numKeys > 64) break; // trying to set an 8x16 grid on a pad with only 64 keys
                if(readY != 0) break;                 // since we only have 8 LEDs in a column, no offset for UNTZs
                for(uint8_t y=0; y<8; y++) {          // each i will be a row
@@ -199,7 +204,7 @@ void processSerial() {
                } // end for y
                break;
     case 0x15: readX = readInt();              // led-grid / set row (debug "v")
-               if(readX != 0 && readX != 8) break;
+               readX >> 3; readX << 3;
                readY = readInt();              // may be any value
                intensity = readInt();          // read one byte of 8 bits on/off
                for(i=0; i<8; i++) {            // for the next 8 lights in row
@@ -214,6 +219,7 @@ void processSerial() {
                break;
     case 0x16: readX = readInt();                   // led-grid / column set (debug "w")
                readY = readInt(); 
+               readY >> 3 ; readY << 3; // floor to multiple of 8
                intensity = readInt();              // read one byte of 8 bits on/off
                if(readY != 0) break;               // Untz' only have 8 lights in a column
                for(i=0; i<8; i++) {                // for the next 8 lights in column
@@ -232,6 +238,7 @@ void processSerial() {
                     if(intensity==0) trellis.clrLED(i);  // turn off if intensity=0
                   }                                      // otherwise leave alone
 	       }
+               trellis.setBrightness(intensity);
                trellis.writeDisplay();
                break;
     case 0x18: readX = readInt();                   // led-grid / set LED intensity (debug "y")
@@ -245,40 +252,63 @@ void processSerial() {
                  trellis.clrLED(index);             //   otherwise clear the pixel
                }
                break;
-    case 0x19: intensity = readInt();       // led-grid / set all LEDs to intensity (debug "z")
-               for (i=0; i<numKeys; i++) {  // check all keys
-                 if(intensity > 0) 
-                    trellis.setLED(i);      // turn all on (any positive intensity is full on)
-                 else
-                    trellis.clrLED(i);      // turn off if intensity = 0
+    case 0x19: // set all leds 
+           intensity = readInt();       // led-grid / set all LEDs to intensity (debug "z")
+             for (i=0; i<numKeys; i++) {  // check all keys
+               if(intensity > 0) 
+                  trellis.setLED(i);      // turn all on (any positive intensity is full on)
+               else
+                  trellis.clrLED(i);      // turn off if intensity = 0
 	       }
-               break;
-    case 0x1A: readX = readInt();               // led-grid / map intensity (debug "{")
-               if(readX != 0 && readX != 8) break;  // x floored by 8
-               readY = readInt();  
-               if(readY != 0) break;                // y floored by 8
-               for(uint8_t y=0; y<8; y++) {
-                 for( uint8_t x=0; x<8; x++){
-                   index = mapXYtoLinear(readX + x, y);
-                   if(index > numKeys) break;
-                   if((x+y)%2 == 0) {           // even bytes, read intensity, use upper nybble
-                      intensity = readInt();
-                      if(intensity>>4 & 0x0F ) 
-                        trellis.setLED(index);  // turn all on (any positive intensity is full on)
-                      else
-                        trellis.clrLED(index);  // turn off if intensity=0 
-                   }                      
-                   else {                       // odd bytes, use lower nybble
-                      if(intensity & 0x0F ) 
-                        trellis.setLED(index);  // turn all on (any positive intensity is full on)
-                      else
-                        trellis.clrLED(index);  // turn off if intensity=0 
-                   }
-                 }
+           break;
+    case 0x1A:  // set 8x8 block.
+           readX = readInt();               // led-grid / map intensity (debug "{")
+           readX << 3; readX >> 3;
+           readY = readInt();  
+           readY << 3; readY >> 3;
+           for(uint8_t y=0; y<8; y++) {
+             for( uint8_t x=0; x<8; x++){
+               index = mapXYtoLinear(readX + x, y);
+               if(index > numKeys) break;
+               if((x+y)%2 == 0) {           // even bytes, read intensity, use upper nybble
+                  intensity = readInt();
+                  if(intensity>>4 & 0x0F ) 
+                    trellis.setLED(index);  // turn all on (any positive intensity is full on)
+                  else
+                    trellis.clrLED(index);  // turn off if intensity=0 
+               }                      
+               else {                       // odd bytes, use lower nybble
+                  if(intensity & 0x0F ) 
+                    trellis.setLED(index);  // turn all on (any positive intensity is full on)
+                  else
+                    trellis.clrLED(index);  // turn off if intensity=0 
                }
-               break;
-    case 0x1B: break;
-    case 0x1C: break;
+             }
+           }
+           break;
+    case 0x1B:  //set 8x1 row of intensities
+             readX = readInt();               // led-grid / map intensity (debug "{")
+             readX << 3; readX >> 3;
+             readY = readInt();  
+             for(uint8_t x = 0; x < 8; x++) {
+                 intensity = readInt();
+                 if (intensity) { 
+                     trellis.setLED(mapXYtoLinear(readX +x,  readY));
+                     }
+             }
+             break;
+    case 0x1C:  // set 1x8 column by intensity; we can't, so any nonzero one is displayed
+             readX = readInt();               // led-grid / map intensity (debug "{")
+             readY = readInt();  
+             readY << 3; readY >> 3;
+             for(uint8_t y = 0; y < 8; y++) {
+                 intensity = readInt();
+                 if (intensity) { 
+                     trellis.setLED(mapXYtoLinear(readX,  readY+y));
+                     }
+             }
+             break;
+    break;
     // 0x20-0x2f are for a Key Grid    
     //   These are handled in the main loop by function pollKeys
     // 0x3x are digital out,  0x4x are digital line in,  0x5x are encoder

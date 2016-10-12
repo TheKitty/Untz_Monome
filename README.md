@@ -15,3 +15,15 @@ Processing, Python, C, Ruby, or others.
 This work is open source per the LICENSE file.  
 
 This is currently in development, if you try it and find issues, please place them in the Issues area for resolution.  Thank you.
+
+
+To identify your untz as a mext-device to serialosc, you'll need to reflash the FTDI eeprom to appear as a monome device, using buspirate's 'piratereflash' or similar. 
+
+-- os x /linux reflash instructions
+Assuming you've got serialosc installed correctly, you should see the serialosc daemon running if you `ps auxw | grep serial`
+To update your untznome's firmware, you'll need to: 
+ 
+ - kill the `serialosc-detector` process
+ - kill the `serialosc-device /dev/tty[...]` process
+
+Then you can reflash your monome.  To get serialosc running again, kill the serialosc daemon process itself, and it will restart.
