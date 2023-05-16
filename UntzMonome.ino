@@ -5,16 +5,15 @@
   4 (UNTZ) or 8 (Hella UNTZ) Adafruit Trellis tactile LED 
   matrices can be used.  #define NUMTRELLIS to the number in use.
 
-  Designed specifically to work with the Adafruit UNTZ and HellaUNTZ
-  ----> https://www.adafruit.com/products/1919
-  ----> https://www.adafruit.com/products/1999
+  Designed for the Adafruit UNTZ and HellaUNTZ
 
   Trellis code written by Limor Fried/Ladyada for Adafruit Industries.  
   UNTZ key code by Phil Burgess for Adafruit Industries
-  Monome emulation written by Mike Barela for Adafruit Industries
+  Monome emulation written by Anne Barela 
   MIT license, all text above must be included in any redistribution
   
   Version 1.0  2015-02-28  First Version
+  THIS WAS NEVER WORKING FULLY, USE FOR REFERENCE ONLY
  ***********************************************************/
 #include <Wire.h>                  // Uses I2C communication Leonardo to Trellis
 #include "Adafruit_Trellis.h"      // Trellis driver library
