@@ -14,7 +14,7 @@ IF YOU WANT TO USE THIS CODE IN MAX OR OTHER SOFTWARE, comment out the #define D
 
 Assumptions
 
-The documentation is not complete so some assumptions have been made.  If assumptions are wrong, please open a GitHub issue in the repository and these will be ironed out.
+The documentation is not complete so some assumptions have been made. **THIS CODE DOES NOT FORK FULLY**
 
 0) all indexes are zero based - so an 8x8 grid is numbered as LED 0 to 7 in both the x & y direction.
 
@@ -33,6 +33,4 @@ If the orientatiuon has y going left to right and x going top to bottom then the
 
 4) The serial number returned is "a0000001" - true monome devices are currently like "m0000001" I believe.
 
-5) Could be some other touches
-
-Again if you note issues, log them in the GitHub issues area so they can be corrected.
+5) This is NOT guaranteed to work in any way
