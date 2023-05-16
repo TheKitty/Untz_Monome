@@ -16,7 +16,7 @@ Processing, Python, C, Ruby, or others.
 
 This work is open source per the LICENSE file.  
 
-This is currently in development, if you try it and find issues, please place them in the Issues area for resolution.  Thank you.
+This work is abandoned and no warranty is here, at your own risk, no complaints if it doesn't work because **It doesn't work fully**
 
 
 To identify your untz as a mext-device to serialosc, you'll need to reflash the FTDI eeprom to appear as a monome device, using buspirate's 'piratereflash' or similar. 
