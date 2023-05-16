@@ -1,5 +1,7 @@
-# Untz_Monome
+# Untz_Monome - THIS CODE DOES NOT WORK
 Program an Adafruit Untz 8x8 or HellaUntz 8x16 to work as a monome.org controller via the mext protocol
+
+**This project was never completed as getting the USB descriptors right back then was a lot harder and I gave up. PLEASE don't rely on this code**
 
 This project uses the monome.org serial protocol defined at http://monome.org/docs/tech:serial which is used to control arrays of lighted buttons for creative control applications.
 
